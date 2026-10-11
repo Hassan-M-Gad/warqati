@@ -136,9 +136,17 @@ document.getElementById('fj').onchange=function(){var f=this.files[0];this.value
   renderLib();alert(n?t('restoredN',n):t('nothingNew'))})};
 
 // ===== أول مرة: ترحيب، وبعدين كراسة تعليمية تجرّب فيها =====
-function openGuide(){var id=lsGet(GK);
+function guideLines(l){return T[l].guide.map(function(g){return mkLine(g[0],g[1],!!g[2])})}
+// الدليل بيتبع لغة البرنامج: لو ما اتعدلش بيتترجم مكانه، ولو اتعدل بيفضل كراسة عادية للمستخدم
+function syncGuideLang(){var id=lsGet(GK);if(!id||!readIdx().some(function(x){return x.id===id}))return;
+  var gl=lsGet(GK+'-lang');if(gl===LANG)return;
+  var cur=JSON.stringify(readNb(id).map(function(x){return [x.t,x.l,!!x.n]})),same=function(l){return JSON.stringify(guideLines(l).map(function(x){return [x.t,x.l,!!x.n]}))===cur};
+  var from=gl?(same(gl)?gl:null):(same('ar')?'ar':same('en')?'en':null);
+  if(from){var lines=guideLines(LANG);try{localStorage.setItem(nbKey(id),JSON.stringify(lines))}catch(e){return}patchNb(id,{title:lines[0].t,updated:Date.now()});lsSet(GK+'-lang',LANG);if(typeof syOnChange==='function')syOnChange()}
+  else{try{localStorage.removeItem(GK);localStorage.removeItem(GK+'-lang')}catch(e){}}}
+function openGuide(){syncGuideLang();var id=lsGet(GK);
   if(id&&readIdx().some(function(x){return x.id===id})){openNb(id);return}
-  newNb(t('guide').map(function(g){return mkLine(g[0],g[1],!!g[2])}));lsSet(GK,NB);patchNb(NB,{color:1});document.getElementById('tip').hidden=false}
+  newNb(guideLines(LANG));lsSet(GK,NB);lsSet(GK+'-lang',LANG);patchNb(NB,{color:1});document.getElementById('tip').hidden=false}
 var wel=document.getElementById('wel'),ws=0;
 function welShow(i){ws=i;var sl=wel.querySelectorAll('.slide');sl.forEach(function(s,k){s.hidden=k!==i});
   wel.querySelectorAll('.dots i').forEach(function(d,k){d.className=k===i?'on':''});
@@ -167,6 +175,7 @@ window.addEventListener('hashchange',function(){var id=hashNb();if(id)openNb(id)
 // البداية: أول مرة ترحيب، وبعد كده الواجهة الرئيسية (أو آخر كراسة لو اخترت كده)
 (function start(){
   if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){});
+  syncGuideLang();
   var a=readIdx(),last=lsGet(LK),h=hashNb();
   if(h){enter(h);history.replaceState(null,'',location.pathname+location.search)}
   else if(lsGet(WK)!=='1'){showLibrary();welcome()}

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Warqati</title>
+<meta name="theme-color" content="#e9e4d8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)">
+<meta name="description" content="ورقة وقلم رقمية لترتيب الأفكار">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+:root{box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px);
+--desk:#e9e4d8;--paper:#fffdf6;--rule:#cfdcec;--margin:#e8a0a0;--ink:#1d3a6b;--head:#14284b;--mut:#8a8f9a;--guide:#7f9cc4;--c0:#b3261e;--c1:#1d4ed8;--c2:#15803d;--c3:#7e22ce;--c4:#c2410c;--c5:#0e7490;--nc:#6f6a5e;--hov:rgba(0,0,0,.06);--shadow:0 2px 14px rgba(0,0,0,.18)}
+:root[data-theme="dark"]{--desk:#14161a;--paper:#22252b;--rule:#30353e;--margin:#7a3b3b;--ink:#dfe6f3;--head:#ffffff;--mut:#7d838e;--guide:#5d6b82;--c0:#ff7a70;--c1:#7aa7ff;--c2:#5fd68a;--c3:#c39bff;--c4:#ffa05c;--c5:#4fd3e6;--nc:#a8a395;--hov:rgba(255,255,255,.08);--shadow:0 2px 14px rgba(0,0,0,.5)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--desk:#14161a;--paper:#22252b;--rule:#30353e;--margin:#7a3b3b;--ink:#dfe6f3;--head:#ffffff;--mut:#7d838e;--guide:#5d6b82;--c0:#ff7a70;--c1:#7aa7ff;--c2:#5fd68a;--c3:#c39bff;--c4:#ffa05c;--c5:#4fd3e6;--nc:#a8a395;--hov:rgba(255,255,255,.08);--shadow:0 2px 14px rgba(0,0,0,.5)}}
+body{margin:0;padding-bottom:84px;background:var(--desk);color:var(--ink);font-family:"Playpen Sans Arabic","Segoe Print","Comic Sans MS",Tahoma,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* الشريط العلوي: القائمة + اسم الورقة وحالة الحفظ + المستويات */
+#bar{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:8px;padding:6px 10px;padding-top:calc(6px + env(safe-area-inset-top,0px));background:var(--desk)}
+.ib{flex:none;width:36px;height:36px;border:0;border-radius:50%;background:none;font-size:19px;line-height:1;display:grid;place-items:center}
+.ib:hover,.ib[aria-expanded="true"]{background:var(--hov)}
+.ib[hidden]{display:none}
+#doc{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+#fnm{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#st{font-size:11.5px;color:var(--mut)}
+#st.warn{color:var(--c4)}
+#lv{flex:none;display:flex;align-items:center;gap:2px;padding:2px;border-radius:16px;background:var(--hov);font-size:12.5px}
+#lv>span{color:var(--mut);padding:0 6px}
+#lv button{border:0;background:none;border-radius:13px;min-width:28px;height:26px;padding:0 8px}
+#lv button:hover{background:var(--paper)}
+#lv button.on{background:var(--paper);color:var(--c1);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+
+/* القائمة */
+#menu{position:absolute;top:calc(100% - 2px);inset-inline-start:8px;min-width:230px;padding:6px;background:var(--paper);border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;font-size:14px}
+#menu[hidden]{display:none}
+#menu button{display:flex;align-items:center;gap:10px;border:0;background:none;border-radius:8px;padding:8px 10px;text-align:start}
+#menu button:hover{background:var(--hov)}
+#menu button i{font-style:normal;width:18px;text-align:center;color:var(--mut)}
+#menu kbd,#menu small{margin-inline-start:auto;font:11.5px inherit;color:var(--mut)}
+#menu hr{border:0;border-top:1px solid var(--rule);margin:5px 4px}
+#menu .danger{color:var(--c0)}
+
+/* الورقة */
+#stage{position:relative;overflow:hidden;margin-top:8px}
+#p{position:absolute;top:0;left:50%;width:794px;margin-left:-397px;transform-origin:top center}
+.sheet{position:relative;width:794px;height:1120px;box-sizing:border-box;background:var(--paper);box-shadow:var(--shadow);padding:40px 0 0;margin-bottom:22px;overflow:hidden}
+.sheet:before{content:"";position:absolute;top:0;bottom:0;inset-inline-start:44px;width:2px;background:var(--margin)}
+.sb{height:1008px;position:relative;background-image:linear-gradient(transparent 41px,var(--rule) 41px);background-size:100% 42px}
+.pn{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:12px;color:var(--mut)}
+.line{position:relative;display:flex;align-items:flex-start;min-height:42px;padding-inline-end:28px}
+.g{position:absolute;top:0;pointer-events:none;box-sizing:border-box}
+.mk{position:relative;width:18px;text-align:center;color:var(--lc,var(--mut));font-size:18px;line-height:42px;flex:none}
+.mk.k{cursor:pointer;user-select:none;font-weight:700}
+.mk.k::after{content:'';position:absolute;inset:0 -7px}
+.mk.k:hover{transform:scale(1.35)}
+.cnt{align-self:center;flex:none;font-size:12px;color:var(--lc);border:1px solid var(--lc);border-radius:10px;padding:0 7px;line-height:18px;margin-inline-start:6px;cursor:pointer}
+.line textarea{flex:1;min-width:0;display:block;box-sizing:border-box;height:42px;border:0;border-radius:0;background:transparent;color:var(--lc,var(--ink));font:inherit;font-size:19px;line-height:42px;padding:0 4px;outline:none;caret-color:var(--ink);resize:none;overflow:hidden}
+.line.txt textarea{font-size:18px}
+.line.l0 textarea{font-weight:600;font-size:21px}
+.line textarea::placeholder{color:var(--mut);opacity:.6}
+/* التلميح بيظهر بس في السطر اللي بتكتب فيه (والعنوان) */
+.line:not(.title) textarea:not(:focus)::placeholder{color:transparent}
+
+/* شريط أدوات السطر */
+#dock{position:fixed;z-index:6;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:2px;padding:4px;background:var(--paper);border-radius:24px;box-shadow:var(--shadow)}
+#dock button{width:40px;height:40px;border:0;border-radius:50%;background:none;font-size:19px;line-height:1}
+#dock button:hover{background:var(--hov)}
+#dock button:disabled{opacity:.35;cursor:default;background:none}
+#dock .sep{width:1px;margin:8px 3px;background:var(--rule)}
+
+dialog{border:0;border-radius:12px;background:var(--paper);color:var(--ink);width:min(560px,92vw);font-family:inherit;box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+#ta{width:100%;height:240px;box-sizing:border-box;background:transparent;color:var(--ink);border:1px dashed var(--mut);border-radius:6px;padding:8px;font:15px/1.6 monospace;tab-size:4}
+dialog .acts{margin-top:10px;display:flex;gap:8px;justify-content:flex-end}
+dialog .acts button{background:none;border:1px solid var(--mut);border-radius:6px;padding:4px 14px}
+#hpd h3{margin:0 0 6px;font-size:17px}
+#hpd table{width:100%;border-collapse:collapse;font-size:14px}
+#hpd td{padding:6px 4px;border-bottom:1px solid var(--rule);vertical-align:top}
+#hpd td:first-child{white-space:nowrap;color:var(--c1);width:1%;padding-inline-end:14px}
+#hpd p{font-size:13.5px;color:var(--mut);margin:10px 0 0}
+
+
+/* الواجهة الرئيسية */
+#lt{display:none;flex:1;margin:0;font-size:17px}
+#lib{display:none;max-width:860px;margin:0 auto;padding:4px 16px 40px}
+.lib #lib{display:block}
+.lib #stage,.lib #dock,.lib #lv,.lib #doc,.lib #lbb,.lib #ft,.lib #tip,.lib #menu .nbo{display:none!important}
+.lib #lt{display:block}
+.lib body{padding-bottom:0}
+.pri{border:0;border-radius:22px;padding:9px 18px;background:var(--c1);color:#fff;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.pri:hover{filter:brightness(1.08)}
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 18px}
+.hero h2{margin:0;font-size:26px;color:var(--head)}
+.hero p{margin:4px 0 0;color:var(--mut);font-size:14px}
+.resume{display:flex;align-items:center;gap:14px;background:var(--paper);border-radius:14px;padding:16px 18px;box-shadow:0 1px 6px rgba(0,0,0,.12);cursor:pointer;outline:none;border-inline-start:8px solid var(--cc)}
+.resume:hover,.resume:focus-visible{box-shadow:0 3px 14px rgba(0,0,0,.2)}
+.resume .rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.resume small{color:var(--c1);font-weight:600;font-size:12.5px}
+.resume b{font-size:20px;color:var(--cc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.resume span{color:var(--mut);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.resume .go{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--cc);color:#fff;font-size:20px}
+#q{width:100%;box-sizing:border-box;margin:18px 0 0;padding:9px 14px;border:1px solid var(--rule);border-radius:20px;background:var(--paper);color:var(--ink);font:inherit;font-size:14px}
+#q[hidden]{display:none}
+#shelf-h{font-size:15px;color:var(--mut);font-weight:400;margin:26px 2px 12px}
+#shelf-h[hidden]{display:none}
+#list{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+/* غلاف الكراسة: كعب ملوّن وورقة مسطرة */
+.cover{position:relative;height:200px;box-sizing:border-box;padding:16px 14px 12px;padding-inline-start:14px;border-radius:6px 14px 14px 6px;background:var(--paper);cursor:pointer;outline:none;
+  box-shadow:0 1px 5px rgba(0,0,0,.14);display:flex;flex-direction:column;gap:6px;transition:transform .12s,box-shadow .12s;
+  border-inline-start:12px solid var(--cc)}
+[dir="rtl"] .cover{border-radius:14px 6px 6px 14px}
+.cover:hover,.cover:focus-visible{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.cover .ct{font-weight:600;font-size:16.5px;color:var(--cc);line-height:1.4;max-height:2.8em;overflow:hidden;padding-inline-end:22px}
+.cover .cp{flex:1;overflow:hidden;font-size:13px;line-height:24px;color:var(--ink);background-image:repeating-linear-gradient(transparent 0,transparent 23px,var(--rule) 23px,var(--rule) 24px)}
+.cover .cp div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cover .cm{font-size:11.5px;color:var(--mut)}
+.cover .pin{position:absolute;top:-6px;inset-inline-end:34px;font-size:16px}
+.cover .more{position:absolute;top:8px;inset-inline-end:6px;width:30px;height:30px;border:0;border-radius:50%;background:none;font-size:18px;color:var(--mut);line-height:1}
+.cover .more:hover{background:var(--hov);color:var(--ink)}
+#cmenu{position:absolute;z-index:20;min-width:190px;padding:6px;background:var(--paper);border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;font-size:14px}
+#cmenu[hidden]{display:none}
+#cmenu>button{border:0;background:none;text-align:start;padding:8px 10px;border-radius:8px}
+#cmenu>button:hover{background:var(--hov)}
+#cmenu .danger{color:var(--c0)}
+#cmenu .sw{display:flex;flex-wrap:wrap;gap:6px;padding:6px 10px}
+#cmenu .sw button{width:22px;height:22px;border-radius:50%;border:2px solid transparent;padding:0}
+#cmenu .sw button.on{border-color:var(--ink)}
+.empty{color:var(--mut);text-align:center;padding:30px 10px;font-size:15px}
+.empty.big .ei{font-size:54px}
+.lf{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--mut)}
+.lf label{display:flex;gap:8px;align-items:center;cursor:pointer;color:var(--ink);margin-top:14px}
+.la{display:flex;flex-wrap:wrap;gap:8px}
+.la button{border:1px solid var(--rule);background:var(--paper);border-radius:18px;padding:6px 13px;color:var(--ink);font-size:13px}
+.la button:hover{border-color:var(--c1)}
+.lf p{margin:12px 0 0;font-size:12.5px;line-height:1.6}
+/* شريط الكراسة التعليمية */
+#tip{max-width:794px;margin:8px auto 0;box-sizing:border-box;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--paper);border-radius:10px;border-inline-start:4px solid var(--c1);font-size:14px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+#tip[hidden]{display:none}
+#tip span{flex:1;min-width:180px}
+.flow #tip{margin:6px 8px 0}
+/* الرسائل الصغيرة */
+#toast{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:14px;background:#22252b;color:#fff;padding:10px 16px;border-radius:10px;box-shadow:var(--shadow);font-size:14px;max-width:90vw}
+#toast[hidden]{display:none}
+#toast button{border:0;background:none;color:#8fb4ff;font-weight:600;padding:0}
+/* السلة */
+#trd h3{margin:0 0 4px;font-size:17px}
+#trd .hint{font-size:13px;color:var(--mut);margin:0 0 10px}
+#trl{max-height:55vh;overflow:auto}
+.trow{display:flex;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid var(--rule)}
+.trow>div{flex:1;min-width:0;display:flex;flex-direction:column}
+.trow small{color:var(--mut);font-size:12px}
+.trow button{border:1px solid var(--mut);background:none;border-radius:6px;padding:4px 10px;font-size:13px}
+.trow button.pri{border:0;background:var(--c1);color:#fff}
+/* عن البرنامج */
+.about{text-align:center}
+.about img{width:72px;height:72px}
+.about h3{margin:8px 0 2px}
+.about .ver{color:var(--mut);font-size:13px;margin:0 0 10px}
+.about p{font-size:14px;line-height:1.7}
+.about a{color:var(--c1)}
+#abd .hint{font-size:12px;color:var(--mut)}
+/* الترحيب أول مرة */
+#wel{position:fixed;inset:0;z-index:40;background:var(--desk);display:grid;place-items:center;padding:16px}
+#wel[hidden]{display:none}
+.wcard{position:relative;width:min(520px,100%);background:var(--paper);border-radius:18px;box-shadow:var(--shadow);padding:30px 26px 20px;text-align:center}
+.wlang{position:absolute;top:12px;inset-inline-end:14px;border:1px solid var(--rule);background:none;border-radius:14px;padding:3px 12px;font-size:13px;color:var(--mut)}
+.wlang:hover{color:var(--ink);border-color:var(--c1)}
+.slide h2{margin:18px 0 8px;font-size:24px;color:var(--head)}
+.slide p{margin:0 auto;max-width:400px;line-height:1.8;font-size:15.5px}
+.slide[hidden]{display:none}
+.art{height:150px;display:grid;place-items:center}
+.art img{width:120px;height:120px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.15))}
+.mini{width:230px;text-align:start;background:var(--desk);border-radius:8px;padding:8px 12px;font-size:14px;line-height:26px;background-image:repeating-linear-gradient(transparent 0,transparent 25px,var(--rule) 25px,var(--rule) 26px);background-position:0 8px}
+.mini .a{color:var(--c0);font-weight:600}.mini .b{color:var(--c1);padding-inline-start:16px}.mini .c{color:var(--c2);padding-inline-start:32px}.mini .d{color:var(--ink);padding-inline-start:0}
+.big-ico{font-size:64px}
+.wnav{display:flex;align-items:center;justify-content:space-between;margin-top:26px}
+.wnav #wskip{border:0;background:none;color:var(--mut);padding:8px 4px}
+.dots{display:flex;gap:6px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--rule)}
+.dots i.on{background:var(--c1);width:20px;border-radius:4px}
+
+
+/* المزامنة */
+#sy{font-size:17px}
+#sy.sy-busy{animation:spin 1.2s linear infinite}
+#sy.sy-auth,#sy.sy-error{color:var(--c4)}
+#sy.sy-offline{opacity:.45}
+@keyframes spin{to{transform:rotate(360deg)}}
+#syd h3{margin:0 0 8px;font-size:17px}
+#syd p{font-size:14px;line-height:1.7;margin:6px 0}
+#syd .hint{font-size:13px;color:var(--mut)}
+#syd .warn{color:var(--c4)}
+#syd .fld{display:block;font-size:12.5px;color:var(--mut);margin-top:10px}
+#syd .fld span{display:flex;gap:6px;margin-top:4px}
+#syd .fld input{flex:1;min-width:0;padding:7px 9px;border:1px solid var(--rule);border-radius:6px;background:var(--desk);color:var(--ink);font:13px monospace}
+#syd .acts.start{justify-content:flex-start;flex-wrap:wrap}
+#syd .acts .pri{border:0;padding:8px 18px;background:var(--c1);color:#fff}
+
+/* الورقة المتصلة: اللوحة الجانبية والشاشات الضيقة */
+.flow #stage{margin-top:0;height:auto!important;overflow:visible}
+.flow #p{position:static;width:auto;margin:0;transform:none!important}
+.flow .sheet{width:auto;height:auto;min-height:calc(100vh - 48px);margin:0;box-shadow:none;padding-top:12px;padding-bottom:42px}
+.flow .sheet:before{inset-inline-start:20px}
+.flow .sb{height:auto;min-height:calc(100vh - 140px)}
+.flow .line{padding-inline-end:10px}
+.flow .line textarea{font-size:17px}
+.flow .line.txt textarea{font-size:16.5px}
+.flow .line.l0 textarea{font-size:19px}
+.flow body{padding-bottom:0}
+.flow #bar{gap:4px;padding-inline:6px}
+.flow #lv>span{display:none}
+.flow #lv button{min-width:24px;padding:0 6px}
+.flow #dock button{width:38px;height:38px;font-size:18px}
+.panel #pr{display:none}
+
+@page{size:A4;margin:0}
+@media print{
+:root,:root[data-theme="dark"],:root:not([data-theme="light"]){padding:0;--desk:#fff;--paper:#fffdf6;--rule:#cfdcec;--margin:#e8a0a0;--ink:#1d3a6b;--head:#14284b;--mut:#8a8f9a;--guide:#7f9cc4;--c0:#b3261e;--c1:#1d4ed8;--c2:#15803d;--c3:#7e22ce;--c4:#c2410c;--c5:#0e7490;--nc:#6f6a5e}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{background:#fff;padding:0}
+#bar,#dock{display:none!important}
+#stage{height:auto!important;overflow:visible;margin:0}
+#p{position:static;width:auto;margin:0;transform:none!important}
+.sheet{width:100%;height:296mm;margin:0;box-shadow:none;break-after:page;page-break-after:always}
+.sheet:last-child{break-after:auto;page-break-after:auto}
+.line textarea::placeholder{color:transparent}
+}
+</style>
+</head>
+<body>
+<header id="bar">
+  <button id="mb" class="ib" aria-haspopup="menu" aria-expanded="false" title="القائمة" data-it="menu">☰</button>
+  <button id="lbb" class="ib" title="الرئيسية" data-it="home">🏠</button>
+  <h1 id="lt" data-i="appNameH">ورقتي</h1>
+  <div id="doc"><span id="fnm">ورقتي</span><span id="st"></span></div>
+  <div id="lv" role="group" aria-label="عرض المستويات" data-it="levels"><span data-i="levels">المستويات</span><button data-n="0" title="العناوين الرئيسية بس" data-it="lv0">١</button><button data-n="1" title="مستويين" data-it="lv1">٢</button><button data-n="2" title="٣ مستويات" data-it="lv2">٣</button><button data-n="3" title="٤ مستويات" data-it="lv3">٤</button><button data-n="all" title="افتح كل الفروع" data-it="lvAllT">الكل</button></div>
+  <button id="sy" class="ib" hidden></button>
+  <button id="ft" class="ib" hidden title="افتح الكراسة في تاب كامل" data-it="openTab">⤢</button>
+  <div id="menu" role="menu" hidden>
+    <button id="lb" class="nbo"><i>🏠</i><span data-i="mHome">الرئيسية</span></button>
+    <button id="nw"><i>＋</i><span data-i="mNew">كراسة جديدة</span></button>
+    <button id="op"><i>📂</i><span data-i="mOpen">فتح ملف ككراسة جديدة…</span></button>
+    <hr class="nbo">
+    <button id="sv" class="nbo"><i>💾</i><span data-i="mSave">حفظ في ملف</span><kbd>Ctrl+S</kbd></button>
+    <button id="sa" class="nbo"><i></i><span data-i="mSaveAs">حفظ باسم…</span></button>
+    <button id="em" class="nbo"><i>⇩</i><span data-i="mMd">تصدير Markdown</span></button>
+    <button id="eo" class="nbo"><i>⇩</i><span data-i="mOpml">تصدير OPML</span></button>
+    <button id="pr" class="nbo"><i>⎙</i><span data-i="mPrint">طباعة / PDF</span></button>
+    <button id="tx" class="nbo"><i>¶</i><span data-i="mText">النسخة النصية</span></button>
+    <hr>
+    <button id="syb"><i>☁</i><span data-i="mSync">المزامنة مع Google Drive</span></button>
+    <button id="th"><i>◐</i><span data-i="mTheme">المظهر</span><small id="thv">تلقائي</small></button>
+    <button id="lg"><i>🌐</i><span data-i="mLang">English</span></button>
+    <button id="hp"><i>⌨</i><span data-i="mHelp">طريقة الكتابة والاختصارات</span></button>
+    <button id="ab"><i>ℹ</i><span data-i="mAbout">عن ورقتي</span></button>
+    <hr class="nbo">
+    <button id="rm" class="danger nbo"><i>🗑</i><span data-i="mDelete">امسح الكراسة دي</span></button>
+  </div>
+</header>
+<main id="lib">
+  <div class="hero"><div><h2 id="hi">أهلاً</h2><p id="today"></p></div><button id="nn" class="pri" data-i="newNb">＋ كراسة جديدة</button></div>
+  <div id="cont"></div>
+  <input id="q" type="search" placeholder="🔍 دوّر في كراساتك…" data-ip="search" hidden>
+  <h3 id="shelf-h"><span data-i="shelf">كراساتي</span> (<span id="shelf-n">0</span>)</h3>
+  <div id="list"></div>
+  <div class="lf">
+    <div class="la"><button id="of" data-i="fOpen">📂 فتح ملف</button><button id="bk" data-i="fBackup">⇩ نسخة احتياطية</button><button id="rs" data-i="fRestore">⇧ استرجاع نسخة</button><button id="trb">🗑 السلة</button><button id="hp2" data-i="fHelp">⌨ طريقة الكتابة</button><button id="gd" data-i="fGuide">✍️ دليل ورقتي</button><button id="wl" data-i="fTour">👋 الجولة التعريفية</button></div>
+    <label><input type="checkbox" id="ol"> <span data-i="openLast">لما أفتح البرنامج، كمّل على آخر كراسة على طول</span></label>
+    <p data-i="storeNote">كراساتك محفوظة على الجهاز ده مع كل حرف. فعّل المزامنة مع Google Drive من ☰ علشان تبقى على كل أجهزتك.</p>
+  </div>
+</main>
+<div id="cmenu" hidden></div>
+<div id="tip" hidden><span data-i="tip">✍️ دي كراسة للتجربة، جرّب فيها براحتك. ولما تخلص ارجع للرئيسية.</span><button id="tiph" class="pri" data-i="tipHome">🏠 روح للرئيسية</button></div>
+<div id="stage"><div id="p"></div></div>
+<input type="file" id="fi" accept=".txt,.md,.opml,text/plain" hidden="">
+<input type="file" id="fj" accept=".json,application/json" hidden="">
+<div id="dock" role="toolbar" aria-label="أدوات السطر" data-it="dockT">
+  <button id="ou" title="رجوع مستوى (Shift+Tab)" data-it="outT">→</button>
+  <button id="in" title="فرعي (Tab)" data-it="inT">←</button>
+  <span class="sep"></span>
+  <button id="kd" title="حوّله لنص عادي">¶</button>
+  <span class="sep"></span>
+  <button id="mu" title="طلّعه لفوق (Alt+↑)" data-it="upT">↑</button>
+  <button id="md" title="نزّله لتحت (Alt+↓)" data-it="downT">↓</button>
+</div>
+
+<dialog id="dlg">
+  <p style="margin-top:0;font-size:14px" data-i="txtIntro">النص ده هو كراستك. انسخه للاحتفاظ بيه، أو الصق نسخة قديمة وسيبه يتحول (المسافة/Tab = مستوى فرعي، و&gt; في أول السطر = نص عادي):</p>
+  <textarea id="ta" dir="auto"></textarea>
+  <div class="acts"><button id="ok" data-i="apply">تطبيق</button><button id="cl" data-i="close">إغلاق</button></div>
+</dialog>
+
+<dialog id="hpd">
+  <h3 data-i="hpTitle">طريقة الكتابة</h3>
+  <table>
+    <tr><td>Enter</td><td data-i="hp1">سطر جديد من نفس النوع. لو في نص الكلام بيقسم السطر</td></tr>
+    <tr><td>Tab / Shift+Tab</td><td data-i="hp2">فرعي / رجوع مستوى (السطر وفروعه مع بعض، ومن غير حد للتفريع)</td></tr>
+    <tr><td data-i="hp3k">- ثم مسافة</td><td data-i="hp3">في أول سطر عادي: يحوّله لفرع</td></tr>
+    <tr><td data-i="hp4k">Backspace في أول السطر</td><td data-i="hp4">يشيل علامة الفرع ويخليه نص عادي، والضغطة اللي بعدها ترجّعه مستوى</td></tr>
+    <tr><td data-i="hp5k">Enter على سطر فاضي</td><td data-i="hp5">يرجع مستوى، ولو في الأول يخرج من التفريع لنص عادي</td></tr>
+    <tr><td>Shift+Enter</td><td data-i="hp6">تحت الفرع: سطر نص للشرح. تحت النص: فرع جديد</td></tr>
+    <tr><td>Alt+↑ / Alt+↓</td><td data-i="hp7">تحريك السطر وفروعه لفوق أو لتحت</td></tr>
+    <tr><td>Ctrl+Z / Ctrl+Y</td><td data-i="hp8">تراجع / إعادة (لأي تعديل، حتى مسح أو تحريك السطور)</td></tr>
+    <tr><td>Ctrl+N</td><td data-i="hp9">كراسة جديدة</td></tr>
+    <tr><td>Ctrl+S</td><td data-i="hp10">حفظ في ملف</td></tr>
+    <tr><td>Ctrl + / Ctrl −</td><td data-i="hp11">تكبير وتصغير الخط (في البرنامج)</td></tr>
+  </table>
+  <p data-i="hpFoot">اضغط على علامة الفرع (▾ أو •) علشان تطوي فروعه. الأزرار اللي تحت بتعمل نفس الحاجات على الموبايل.</p>
+  <div class="acts"><button id="hpc" data-i="ok">تمام</button></div>
+</dialog>
+
+<dialog id="syd">
+  <h3 data-i="syTitle">المزامنة مع Google Drive</h3>
+  <div id="sy-setup">
+    <p data-ih="syIntro">كراساتك هتتحفظ في فولدر <b>«ورقتي»</b> في Google Drive بتاعك، وتبقى واحدة على كل أجهزتك. التطبيق بيشوف الملفات اللي هو عملها بس.</p>
+    <p class="hint" id="sy-web" data-ih="syWeb">محتاج مرة واحدة تعمل <b>Client ID</b> من Google Cloud (الخطوات في ملف README). حط فيه العنوانين اللي تحت:</p>
+    <p class="hint" id="sy-desk" hidden data-ih="syDesk">في Google Cloud اعمل Client جديد من نوع <b>Desktop app</b> (في نفس المشروع)، وانسخ الـ Client ID والـ Client secret هنا. تسجيل الدخول هيفتح المتصفح مرة واحدة بس.</p>
+    <label class="fld" id="syr-row"><span data-i="syRedir">عنوان الرجوع (Authorized redirect URI)</span><span><input id="syr" readonly dir="ltr"><button class="cp" data-for="syr">نسخ</button></span></label>
+    <label class="fld" id="syo-row"><span data-i="syOrigin">مصدر الموقع (Authorized JavaScript origin)</span><span><input id="syo" readonly dir="ltr"><button class="cp" data-for="syo">نسخ</button></span></label>
+    <label class="fld"><span data-i="syId">الـ Client ID</span><span><input id="syc" dir="ltr" placeholder="xxxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false"></span></label>
+    <label class="fld" id="sye-row" hidden><span data-i="sySecret">الـ Client secret</span><span><input id="sye" type="password" dir="ltr" placeholder="GOCSPX-…" autocomplete="off" spellcheck="false"></span></label>
+    <div class="acts"><button id="syk" class="pri" data-i="syConnect">اربط حساب Google</button></div>
+  </div>
+  <div id="sy-on" hidden>
+    <p id="sys"></p>
+    <div class="acts start"><button id="syn" data-i="sySyncNow">زامن دلوقتي</button><button id="syl" data-i="syRelogin">سجّل دخول تاني</button><button id="syx" data-i="syStopB">أوقف المزامنة</button></div>
+  </div>
+  <p id="sym" class="hint warn"></p>
+  <div class="acts"><button id="syq" data-i="close">إغلاق</button></div>
+</dialog>
+
+<dialog id="trd">
+  <h3 data-i="trTitle">🗑 السلة</h3>
+  <p class="hint" data-i="trHint">الكراسات الممسوحة بتفضل هنا ٣٠ يوم، وتقدر ترجّعها.</p>
+  <div id="trl"></div>
+  <div class="acts"><button id="tre" data-i="trEmpty">فضّي السلة</button><button id="trc" data-i="close">إغلاق</button></div>
+</dialog>
+
+<dialog id="abd">
+  <div class="about"><img src="icons/icon.svg" alt=""><h3 data-i="abTitle">عن ورقتي</h3><p class="ver">Warqati <span id="abv"></span></p>
+    <p data-i="abBody">ورقة وقلم لأفكارك. الكراسات محفوظة على جهازك، وعلى Google Drive بتاعك لو شغّلت المزامنة بس.</p>
+    <p><a id="abp" href="privacy.html" target="_blank" rel="noopener" data-i="abPrivacy">سياسة الخصوصية</a></p>
+    <p class="hint" data-i="abFont">الخط: Playpen Sans Arabic (رخصة SIL Open Font License).</p></div>
+  <div class="acts"><button id="abc" data-i="close">إغلاق</button></div>
+</dialog>
+
+<div id="wel" hidden role="dialog" aria-label="أهلاً في ورقتي" data-it="welAria">
+  <div class="wcard">
+    <button id="wlang" class="wlang" data-i="wLang">English</button>
+    <section class="slide"><div class="art"><img src="icons/icon.svg" alt=""></div>
+      <h2 data-i="w1t">أهلاً في ورقتي</h2><p data-i="w1p">ورقة وقلم على جهازك. اكتب أفكارك ورتّبها في فروع، من غير تعقيد.</p></section>
+    <section class="slide" hidden><div class="art"><div class="mini"><div class="a" data-i="wm1">خطة الأسبوع</div><div class="d" data-i="wm2">النهارده عندي كذا حاجة:</div><div class="b" data-i="wm3">• الشغل</div><div class="c" data-i="wm4">– تسليم التصميم</div><div class="b" data-i="wm5">• البيت</div></div></div>
+      <h2 data-i="w2t">اكتب زي الكراسة</h2><p data-i="w2p">اكتب عادي، و Tab يعمل فرع جوه فرع. مفيش حدود للتفريع، وتقدر ترجع تكتب نص عادي في أي وقت.</p></section>
+    <section class="slide" hidden><div class="art"><div class="big-ico">🔒</div></div>
+      <h2 data-i="w3t">مفيش حاجة بتضيع</h2><p data-i="w3p">كل حرف بيتحفظ لوحده، والمحذوف بيفضل في السلة ٣٠ يوم، و Ctrl+Z بيرجّع أي حاجة. وتقدر تزامن كراساتك مع Google Drive.</p></section>
+    <div class="wnav"><button id="wskip" data-i="skip">تخطي</button><div class="dots"><i></i><i></i><i></i></div><button id="wnext" class="pri">التالي</button></div>
+  </div>
+</div>
+
+<div id="toast" hidden role="status"></div>
+
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+<script src="home.js"></script>
+<script src="sync.js"></script>
+</body></html>

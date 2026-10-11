@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ورقتي</title></head>
+<body style="font-family:Tahoma,sans-serif;text-align:center;margin-top:60px;color:#1d3a6b;background:#fffdf6">
+<p>تم الربط ✓ النافذة دي هتتقفل لوحدها…</p>
+<script>
+// بتبعت نتيجة تسجيل الدخول لصفحة ورقتي (نفس الموقع بس) وتقفل
+var msg={type:'warqati-oauth',hash:location.hash};
+try{new BroadcastChannel('warqati-oauth').postMessage(msg)}catch(e){}
+try{if(window.opener)window.opener.postMessage(msg,location.origin)}catch(e){}
+history.replaceState(null,'',location.pathname);
+setTimeout(function(){window.close()},400);
+</script>
+</body></html>

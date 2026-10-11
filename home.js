@@ -13,7 +13,7 @@ function openNb(id){if(id===NB&&!isLib())return;leaveNb();enter(id)}
 function newNb(lines){leaveNb();NB=newId();L=lines||[{t:'',l:0}];storeNb(true);enter(NB,lines?null:0)}
 function isLib(){return document.documentElement.classList.contains('lib')}
 function showLibrary(){leaveNb();menuOpen(false);document.documentElement.classList.add('lib');renderLib();window.scrollTo(0,0)}
-function when(t){if(!t)return '';var d=new Date(t),n=new Date(),y=new Date(n);y.setDate(n.getDate()-1);
+function when(ts){if(!ts)return '';var d=new Date(ts),n=new Date(),y=new Date(n);y.setDate(n.getDate()-1);
   var tm=d.toLocaleTimeString(LOC,{hour:'numeric',minute:'2-digit'});
   if(d.toDateString()===n.toDateString())return t('today',tm);if(d.toDateString()===y.toDateString())return t('yesterday',tm);
   return d.toLocaleDateString(LOC,d.getFullYear()===n.getFullYear()?{day:'numeric',month:'long'}:{day:'numeric',month:'long',year:'numeric'})}
@@ -120,8 +120,8 @@ document.getElementById('bk').onclick=function(){
   var a=readIdx().map(function(e){return Object.assign({},e,{lines:readNb(e.id)})});
   download(t('backupName',new Date().toISOString().slice(0,10)),JSON.stringify({app:'warqati',version:1,exported:Date.now(),notebooks:a},null,1),'application/json')};
 document.getElementById('rs').onclick=function(){document.getElementById('fj').click()};
-document.getElementById('fj').onchange=function(){var f=this.files[0];this.value='';if(!f)return;f.text().then(function(t){
-  var d;try{d=JSON.parse(t)}catch(e){}
+document.getElementById('fj').onchange=function(){var f=this.files[0];this.value='';if(!f)return;f.text().then(function(txt){
+  var d;try{d=JSON.parse(txt)}catch(e){}
   if(!d||!Array.isArray(d.notebooks)){alert(t('notBackup'));return}
   var a=readIdx(),n=0;
   d.notebooks.forEach(function(b){if(!b||!b.id||!Array.isArray(b.lines)||!b.lines.length)return;

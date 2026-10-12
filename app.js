@@ -193,7 +193,7 @@ var hpd=document.getElementById('hpd');
 document.getElementById('hp').onclick=function(){hpd.showModal()};
 document.getElementById('hpc').onclick=function(){hpd.close()};
 
-var TYPES=[{description:t('txtFile'),accept:{'text/plain':['.txt']}},{description:'Markdown',accept:{'text/markdown':['.md']}},{description:'OPML',accept:{'text/x-opml':['.opml']}}];
+var TYPES=[{description:t('txtFile'),accept:{'text/plain':['.txt']}},{description:'Markdown',accept:{'text/markdown':['.md']}},{description:'OPML',accept:{'text/x-opml':['.opml']}},{description:'XMind',accept:{'application/vnd.xmind.workbook':['.xmind']}}];
 function extOf(n){var m=/\.(\w+)$/.exec(n||''),e=m?m[1].toLowerCase():'txt';return e==='md'||e==='opml'?e:'txt'}
 function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function toText(){return L.map(function(x){return '\t'.repeat(x.l)+(x.n?'> ':'')+x.t}).join('\n')}
@@ -238,8 +238,62 @@ async function saveAs(){if(window.showSaveFilePicker){try{fh=await showSaveFileP
 async function saveNow(){if(!NB)return;if(fh)await writeFile();else await saveAs()}
 // فتح ملف بيعمل منه كراسة جديدة، ومش بيكتب على الكراسة المفتوحة
 function linkFile(h,name){fh=h;fname=name;dirty=false;setSt()}
-async function openFile(){if(window.showOpenFilePicker){try{var h=(await showOpenFilePicker({types:TYPES}))[0],f=await h.getFile();newNb(parseAny(await f.text(),h.name));linkFile(h,h.name)}catch(e){if(e&&e.name!=='AbortError')document.getElementById('fi').click()}}else document.getElementById('fi').click()}
-document.getElementById('fi').onchange=function(){var f=this.files[0];this.value='';if(!f)return;f.text().then(function(t){newNb(parseAny(t,f.name));linkFile(null,f.name)})};
+async function openFile(){if(window.showOpenFilePicker){try{var h=(await showOpenFilePicker({types:TYPES}))[0],f=await h.getFile();if(isXmind(h.name)){await importFiles([f]);return}newNb(parseAny(await f.text(),h.name));linkFile(h,h.name)}catch(e){if(e&&e.name!=='AbortError')document.getElementById('fi').click()}}else document.getElementById('fi').click()}
+document.getElementById('fi').onchange=function(){var fs=[].slice.call(this.files);this.value='';if(fs.length)importFiles(fs)};
+
+// ===== XMind: ملف zip جواه content.json (الإصدارات الجديدة) أو content.xml (XMind 8) =====
+function isXmind(n){return /\.xmind$/i.test(n||'')}
+// قراءة ملف واحد من جوه الـ zip، والفك بأداة المتصفح نفسها (DecompressionStream)
+async function unzipText(buf,name){
+  var u=new Uint8Array(buf),dv=new DataView(buf),e=-1,dec=new TextDecoder();
+  for(var i=u.length-22;i>=Math.max(0,u.length-65557);i--)if(dv.getUint32(i,true)===0x06054b50){e=i;break}
+  if(e<0)throw new Error('zip');
+  for(var k=0,n=dv.getUint16(e+10,true),p=dv.getUint32(e+16,true);k<n;k++){
+    var method=dv.getUint16(p+10,true),size=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),off=dv.getUint32(p+42,true);
+    if(dec.decode(u.subarray(p+46,p+46+nl))===name){
+      var st=off+30+dv.getUint16(off+26,true)+dv.getUint16(off+28,true),data=u.subarray(st,st+size);
+      if(method===0)return dec.decode(data);
+      return await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text()}
+    p+=46+nl+xl+cl}
+  return null}
+// فكرة واحدة وفروعها: العنوان اللي فيه كذا سطر أوله فرع، والسطور اللي عليها علامة (●) فروع تحته، والباقي نص عادي
+var XB=/^[●•◦▪■◆\-*–]\s*/;
+function xmAdd(title,note,d,out,kids){
+  var ls=String(title||'').split(/\r?\n/).map(function(s){return s.trim()}).filter(Boolean);
+  // فكرة كلها نقط (● … ● …): كل نقطة فرع في نفس المستوى
+  if(d>0&&XB.test(ls[0]||''))ls.forEach(function(s){out.push(XB.test(s)?mkLine(s.replace(XB,''),d,false):mkLine(s,d+1,true))});
+  else{out.push(mkLine(d===0?ls.join(' — '):(ls.shift()||''),d,false));
+    if(d>0)ls.forEach(function(s){out.push(mkLine(s.replace(XB,''),d+1,!XB.test(s)))})}
+  String(note||'').split(/\r?\n/).map(function(s){return s.trim()}).filter(Boolean).forEach(function(s){out.push(mkLine(s,d+1,true))});
+  kids.forEach(function(k){k(d+1,out)})}
+function xmJson(tp){return function(d,out){var c=tp.children||{},nt=tp.notes&&(tp.notes.plain&&tp.notes.plain.content||tp.notes.realHTML&&tp.notes.realHTML.content.replace(/<[^>]+>/g,'\n'))||'';
+  xmAdd(tp.title,nt,d,out,(c.attached||[]).concat(c.detached||[]).map(xmJson))}}
+function xmXml(el){return function(d,out){var kid=function(n){for(var c=el.firstElementChild;c;c=c.nextElementSibling)if(c.localName===n)return c;return null};
+  var ch=kid('children'),ks=[];if(ch)for(var g=ch.firstElementChild;g;g=g.nextElementSibling)if(g.localName==='topics')for(var t=g.firstElementChild;t;t=t.nextElementSibling)if(t.localName==='topic')ks.push(xmXml(t));
+  var ti=kid('title'),no=kid('notes'),pl=no&&no.getElementsByTagName('plain')[0];
+  xmAdd(ti?ti.textContent:'',pl?pl.textContent:'',d,out,ks)}}
+// كل ورقة (Sheet) في الملف بترجع كراسة
+async function parseXmind(buf){
+  var j=await unzipText(buf,'content.json');
+  if(j)return JSON.parse(j).filter(function(s){return s.rootTopic}).map(function(s){var o=[];xmJson(s.rootTopic)(0,o);return normLines(o)});
+  var x=await unzipText(buf,'content.xml');if(!x)throw new Error('xmind');
+  var doc=new DOMParser().parseFromString(x,'text/xml'),sh=doc.getElementsByTagName('sheet'),r=[];
+  for(var i=0;i<sh.length;i++){var tp=null;for(var c=sh[i].firstElementChild;c;c=c.nextElementSibling)if(c.localName==='topic'){tp=c;break}
+    if(tp){var o=[];xmXml(tp)(0,o);r.push(normLines(o))}}
+  if(!r.length)throw new Error('xmind');return r}
+// فتح ملفات (من زرار الفتح أو بالسحب): كل ملف بيبقى كراسة جديدة
+async function importFiles(files){
+  var made=0,bad=[];
+  for(var i=0;i<files.length;i++){var f=files[i];
+    try{if(isXmind(f.name)){(await parseXmind(await f.arrayBuffer())).forEach(function(lines){newNb(lines);made++})}
+      else if(/\.(txt|md|markdown|opml)$/i.test(f.name)){newNb(parseAny(await f.text(),f.name));if(files.length===1)linkFile(null,f.name);made++}
+      else bad.push(f.name)}
+    catch(e){bad.push(f.name)}}
+  if(bad.length)alert(t('importErr',bad.join('، ')));
+  else if(made>1){showLibrary();toast(t('importedN',made))}}
+// اسحب ملف وارميه على البرنامج
+document.addEventListener('dragover',function(e){if(e.dataTransfer&&[].indexOf.call(e.dataTransfer.types,'Files')>=0){e.preventDefault();e.dataTransfer.dropEffect='copy'}});
+document.addEventListener('drop',function(e){if(!e.dataTransfer||!e.dataTransfer.files.length)return;e.preventDefault();importFiles([].slice.call(e.dataTransfer.files))});
 document.getElementById('em').onclick=function(){dl('md')};document.getElementById('eo').onclick=function(){dl('opml')};document.getElementById('op').onclick=openFile;document.getElementById('sv').onclick=saveNow;document.getElementById('sa').onclick=saveAs;
 // الاختصارات بالـ code مش بالحرف، علشان تشتغل والكيبورد عربي
 document.addEventListener('keydown',function(e){if(!(e.ctrlKey||e.metaKey)||e.altKey)return;var c=e.code,ed=!isLib()&&!!NB;

@@ -242,7 +242,7 @@ body{background:#fff;padding:0}
   <div id="menu" role="menu" hidden>
     <button id="lb" class="nbo"><i>🏠</i><span data-i="mHome">الرئيسية</span></button>
     <button id="nw"><i>＋</i><span data-i="mNew">كراسة جديدة</span></button>
-    <button id="op"><i>📂</i><span data-i="mOpen">فتح ملف ككراسة جديدة…</span></button>
+    <button id="op"><i>📂</i><span data-i="mOpen">فتح ملف (XMind، Markdown…)</span></button>
     <hr class="nbo">
     <button id="sv" class="nbo"><i>💾</i><span data-i="mSave">حفظ في ملف</span><kbd>Ctrl+S</kbd></button>
     <button id="sa" class="nbo"><i></i><span data-i="mSaveAs">حفظ باسم…</span></button>
@@ -267,7 +267,7 @@ body{background:#fff;padding:0}
   <h3 id="shelf-h"><span data-i="shelf">كراساتي</span> (<span id="shelf-n">0</span>)</h3>
   <div id="list"></div>
   <div class="lf">
-    <div class="la"><button id="of" data-i="fOpen">📂 فتح ملف</button><button id="bk" data-i="fBackup">⇩ نسخة احتياطية</button><button id="rs" data-i="fRestore">⇧ استرجاع نسخة</button><button id="trb">🗑 السلة</button><button id="hp2" data-i="fHelp">⌨ طريقة الكتابة</button><button id="gd" data-i="fGuide">✍️ دليل ورقتي</button><button id="wl" data-i="fTour">👋 الجولة التعريفية</button></div>
+    <div class="la"><button id="of" data-i="fOpen">📂 فتح ملف (XMind…)</button><button id="bk" data-i="fBackup">⇩ نسخة احتياطية</button><button id="rs" data-i="fRestore">⇧ استرجاع نسخة</button><button id="trb">🗑 السلة</button><button id="hp2" data-i="fHelp">⌨ طريقة الكتابة</button><button id="gd" data-i="fGuide">✍️ دليل ورقتي</button><button id="wl" data-i="fTour">👋 الجولة التعريفية</button></div>
     <label><input type="checkbox" id="ol"> <span data-i="openLast">لما أفتح البرنامج، كمّل على آخر كراسة على طول</span></label>
     <p data-i="storeNote">كراساتك محفوظة على الجهاز ده مع كل حرف. فعّل المزامنة مع Google Drive من ☰ علشان تبقى على كل أجهزتك.</p>
   </div>
@@ -275,7 +275,7 @@ body{background:#fff;padding:0}
 <div id="cmenu" hidden></div>
 <div id="tip" hidden><span data-i="tip">✍️ دي كراسة للتجربة، جرّب فيها براحتك. ولما تخلص ارجع للرئيسية.</span><button id="tiph" class="pri" data-i="tipHome">🏠 روح للرئيسية</button></div>
 <div id="stage"><div id="p"></div></div>
-<input type="file" id="fi" accept=".txt,.md,.opml,text/plain" hidden="">
+<input type="file" id="fi" accept=".txt,.md,.opml,.xmind,text/plain" multiple hidden="">
 <input type="file" id="fj" accept=".json,application/json" hidden="">
 <div id="dock" role="toolbar" aria-label="أدوات السطر" data-it="dockT">
   <button id="ou" title="رجوع مستوى (Shift+Tab)" data-it="outT">→</button>

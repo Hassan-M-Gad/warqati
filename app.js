@@ -105,7 +105,7 @@ function render(f,pos){
       mv.forEach(function(m){nb.append(m)});B=nb;B.append(d);grow(inp)}
     inp.dataset.h=inp.offsetHeight});
   var sh=FLOW?[]:p.querySelectorAll('.sheet');sh.forEach(function(sx,k){var pn=document.createElement('div');pn.className='pn';pn.textContent=t('page',k+1,sh.length);sx.append(pn);
-    if(k>0)spineLabels(sx.querySelector('.sb'),S)});fitStage();
+    if(k>0&&SPINE)spineLabels(sx.querySelector('.sb'),S)});fitStage();
   document.querySelectorAll('#lv button').forEach(function(b){b.classList.toggle('on',b.dataset.n===String(lvSel))});
   if(f!=null){var el=p.querySelector('textarea[data-i="'+f+'"]');if(el){el.focus();var n=pos!=null?Math.min(pos,el.value.length):el.value.length;el.setSelectionRange(n,n)}}
   updDock()}
@@ -206,13 +206,18 @@ document.querySelectorAll('#lv button').forEach(function(b){b.onclick=function()
 var mb=document.getElementById('mb'),menu=document.getElementById('menu');
 function menuOpen(on){menu.hidden=!on;mb.setAttribute('aria-expanded',on)}
 mb.onclick=function(e){e.stopPropagation();menuOpen(menu.hidden)};
-menu.onclick=function(e){if(e.target.closest('button')&&e.target.id!=='th')menuOpen(false)};
+menu.onclick=function(e){var b=e.target.closest('button');if(b&&b.id!=='th'&&b.id!=='sp')menuOpen(false)};
 document.addEventListener('click',function(e){if(!menu.hidden&&!menu.contains(e.target))menuOpen(false)});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')menuOpen(false)});
 
 // المظهر: تلقائي / فاتح / داكن
 var THEMES={auto:t('themeAuto'),light:t('themeLight'),dark:t('themeDark')},theme='auto';try{theme=localStorage.getItem('warqati-theme')||'auto'}catch(e){}
 function applyTheme(){if(theme==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',theme);document.getElementById('thv').textContent=THEMES[theme]}
+// أسماء الفروع بالطول جنب الخطوط اللي بتكمّل في صفحة جديدة: اختيار، ومقفول من الأول
+var SPINE=lsGet('warqati-spine')==='1';
+function showSpine(){document.getElementById('spv').textContent=SPINE?t('on'):t('off')}
+document.getElementById('sp').onclick=function(){SPINE=!SPINE;lsSet('warqati-spine',SPINE?'1':'0');showSpine();if(NB&&!isLib())rerender()};
+showSpine();
 document.getElementById('th').onclick=function(){theme={auto:'light',light:'dark',dark:'auto'}[theme];try{localStorage.setItem('warqati-theme',theme)}catch(e){}applyTheme()};
 applyTheme();
 

@@ -43,7 +43,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 [dir="ltr"] .crumb button+button::before,[dir="ltr"] .crumb .more+button::before{content:'›'}
 .crumb .lbl{flex:none;font-weight:600;margin-inline-end:6px}
 .crumb .more{flex:none;padding:0 3px}
-.sheet .cont{position:absolute;top:12px;inset-inline-start:56px;inset-inline-end:28px;font-size:12px}
+/* اسم الفكرة بالطول جنب خط الفرع اللي كمّل من الصفحة اللي فاتت */
+.vlab{position:absolute;top:3px;z-index:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.7;cursor:pointer;text-align:start}
+.vlab:hover{opacity:1}
 /* القائمة */
 #menu{position:absolute;top:calc(100% - 2px);inset-inline-start:8px;min-width:230px;padding:6px;background:var(--paper);border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;font-size:14px}
 #menu[hidden]{display:none}
@@ -238,7 +240,6 @@ body{background:#fff;padding:0}
 .sheet{width:100%;height:296mm;margin:0;box-shadow:none;break-after:page;page-break-after:always}
 .sheet:last-child{break-after:auto;page-break-after:auto}
 .line textarea::placeholder{color:transparent}
-.sheet .cont button{color:var(--mut)}
 }
 </style>
 </head>

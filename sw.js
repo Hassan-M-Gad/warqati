@@ -1,5 +1,5 @@
 // غيّر رقم النسخة مع كل تحديث علشان الأجهزة تاخد الملفات الجديدة
-var V='warqati-v15',CORE=['./','index.html','i18n.js','app.js','home.js','sync.js','fonts/fonts.css','manifest.webmanifest','icons/icon.svg','icons/icon-192.png','icons/icon-512.png'];
+var V='warqati-v16',CORE=['./','index.html','i18n.js','app.js','home.js','sync.js','fonts/fonts.css','manifest.webmanifest','icons/icon.svg','icons/icon-192.png','icons/icon-512.png'];
 self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){return c.addAll(CORE)}).then(function(){return self.skipWaiting()}))});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k!==V}).map(function(k){return caches.delete(k)}))}).then(function(){return self.clients.claim()}))});
 self.addEventListener('fetch',function(e){

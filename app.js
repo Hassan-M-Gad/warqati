@@ -105,7 +105,7 @@ function render(f,pos){
       mv.forEach(function(m){nb.append(m)});B=nb;B.append(d);grow(inp)}
     inp.dataset.h=inp.offsetHeight});
   var sh=FLOW?[]:p.querySelectorAll('.sheet');sh.forEach(function(sx,k){var pn=document.createElement('div');pn.className='pn';pn.textContent=t('page',k+1,sh.length);sx.append(pn);
-    var fl=sx.querySelector('.line');if(k>0&&fl){var cr=crumbs(+fl.dataset.li,'cont');if(cr)sx.append(cr)}});fitStage();
+    if(k>0)spineLabels(sx.querySelector('.sb'),S)});fitStage();
   document.querySelectorAll('#lv button').forEach(function(b){b.classList.toggle('on',b.dataset.n===String(lvSel))});
   if(f!=null){var el=p.querySelector('textarea[data-i="'+f+'"]');if(el){el.focus();var n=pos!=null?Math.min(pos,el.value.length):el.value.length;el.setSelectionRange(n,n)}}
   updDock()}
@@ -171,11 +171,27 @@ function key(e,i,inp){
 function parentOf(i){for(var j=i-1;j>=0;j--)if(L[j].l<L[i].l)return j;return -1}
 function pathOf(i){var r=[];if(!L[i])return r;for(var j=parentOf(i);j>0;j=parentOf(j))r.unshift(j);return r}
 function crumbs(i,cls){var a=pathOf(i);if(!a.length)return null;var e=document.createElement('div');e.className='crumb '+cls;
-  if(cls==='cont'){var lb=document.createElement('span');lb.className='lbl';lb.textContent=t('continued');e.append(lb)}
   if(a.length>4){var m=document.createElement('span');m.className='more';m.textContent='…';e.append(m);a=a.slice(-4)}
   a.forEach(function(j){var b=document.createElement('button'),s=L[j].t.trim();b.textContent=s.length>30?s.slice(0,29)+'…':(s||'…');b.title=s;
     b.onmousedown=function(ev){ev.preventDefault()};b.onclick=function(){render(j)};e.append(b)});
   return e}
+// الصفحة اللي بتبدأ من نص فرع: اسم الفكرة الأصلية بيتكتب بالطول جنب خط الفرع النازل منها، وعلى قد طوله في الصفحة دي
+function spineLabels(sb,S){
+  var ls=[].slice.call(sb.querySelectorAll('.line'));if(!ls.length)return;
+  var f=+ls[0].dataset.li,h=Math.min(17,S-5);if(h<10)return;
+  for(var k=1;k<=L[f].l;k++){
+    var a=f;while(a>=0&&L[a].l>k-1)a=parentOf(a);
+    if(a<=0||L[a].l!==k-1||!L[a].t.trim())continue;
+    // الخط بيخلص عند أول سطر مستواه أقل من k
+    var end=sb.scrollHeight;for(var j=1;j<ls.length;j++)if(L[+ls[j].dataset.li].l<k){end=ls[j].offsetTop;break}
+    var len=end-8;if(len<70)continue;
+    var v=document.createElement('span');v.className='vlab';v.textContent=L[a].t.trim();v.title=L[a].t.trim();
+    // العمود اللي قبل خط الفرع، وبنلف الكلام حسب لغته هو علشان يتقري دايماً من فوق لتحت
+    var gx=IN0+(k-1)*S+9,rtlUI=document.documentElement.dir==='rtl',col=rtlUI?sb.clientWidth-gx+2:gx-2-h,rtlT=/^[^A-Za-z]*[\u0590-\u08FF]/.test(v.textContent);
+    v.dir=rtlT?'rtl':'ltr';v.style.width=len+'px';v.style.height=v.style.lineHeight=h+'px';v.style.fontSize=(h-4)+'px';
+    v.style.left=(rtlT?col-len:col+h)+'px';v.style.transformOrigin=rtlT?'top right':'top left';v.style.transform='rotate('+(rtlT?-90:90)+'deg)';
+    v.style.color='var(--c'+(L[a].n?'0':(L[a].l?(L[a].l-1)%5+1:0))+')';if(L[a].n)v.style.color='var(--ink)';
+    v.onclick=(function(j){return function(){render(j)}})(a);sb.append(v)}}
 function updCrumb(){var c=document.getElementById('crumb');if(!c)return;c.innerHTML='';var cr=!isLib()&&NB?crumbs(cur,'bar'):null;
   if(cr)c.append(cr);c.hidden=!cr}
 function updDock(){updCrumb();var x=L[cur],k=document.getElementById('kd');if(!x||!k)return;k.textContent=x.n?'•':'¶';k.title=x.n?t('toNode'):t('toText');k.disabled=cur===0}

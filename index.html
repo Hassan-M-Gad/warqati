@@ -19,7 +19,7 @@ body{margin:0;padding-bottom:84px;background:var(--desk);color:var(--ink);font-f
 button{font:inherit;color:inherit;cursor:pointer}
 
 /* الشريط العلوي: القائمة + اسم الورقة وحالة الحفظ + المستويات */
-#bar{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:8px;padding:6px 10px;padding-top:calc(6px + env(safe-area-inset-top,0px));background:var(--desk)}
+#bar{position:sticky;top:0;z-index:6;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 10px;padding-top:calc(6px + env(safe-area-inset-top,0px));background:var(--desk)}
 .ib{flex:none;width:36px;height:36px;border:0;border-radius:50%;background:none;font-size:19px;line-height:1;display:grid;place-items:center}
 .ib:hover,.ib[aria-expanded="true"]{background:var(--hov)}
 .ib[hidden]{display:none}
@@ -33,6 +33,17 @@ button{font:inherit;color:inherit;cursor:pointer}
 #lv button:hover{background:var(--paper)}
 #lv button.on{background:var(--paper);color:var(--c1);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 
+/* المسار: في الشريط، وفوق الصفحة اللي بتكمّل فرع */
+#crumb{order:10;flex-basis:100%;min-width:0;margin:-2px 0 0;padding-inline-start:46px}
+#crumb[hidden],.lib #crumb{display:none!important}
+.crumb{display:flex;align-items:center;min-width:0;overflow:hidden;white-space:nowrap;font-size:12.5px;color:var(--mut)}
+.crumb button{flex:0 1 auto;min-width:0;border:0;background:none;color:inherit;font:inherit;padding:1px 3px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.crumb button:hover{color:var(--ink);background:var(--hov)}
+.crumb button+button::before,.crumb .more+button::before{content:'‹';margin-inline-end:6px;color:var(--mut)}
+[dir="ltr"] .crumb button+button::before,[dir="ltr"] .crumb .more+button::before{content:'›'}
+.crumb .lbl{flex:none;font-weight:600;margin-inline-end:6px}
+.crumb .more{flex:none;padding:0 3px}
+.sheet .cont{position:absolute;top:12px;inset-inline-start:56px;inset-inline-end:28px;font-size:12px}
 /* القائمة */
 #menu{position:absolute;top:calc(100% - 2px);inset-inline-start:8px;min-width:230px;padding:6px;background:var(--paper);border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;font-size:14px}
 #menu[hidden]{display:none}
@@ -227,6 +238,7 @@ body{background:#fff;padding:0}
 .sheet{width:100%;height:296mm;margin:0;box-shadow:none;break-after:page;page-break-after:always}
 .sheet:last-child{break-after:auto;page-break-after:auto}
 .line textarea::placeholder{color:transparent}
+.sheet .cont button{color:var(--mut)}
 }
 </style>
 </head>
@@ -238,6 +250,7 @@ body{background:#fff;padding:0}
   <div id="doc"><span id="fnm">ورقتي</span><span id="st"></span></div>
   <div id="lv" role="group" aria-label="عرض المستويات" data-it="levels"><span data-i="levels">المستويات</span><button data-n="0" title="العناوين الرئيسية بس" data-it="lv0">١</button><button data-n="1" title="مستويين" data-it="lv1">٢</button><button data-n="2" title="٣ مستويات" data-it="lv2">٣</button><button data-n="3" title="٤ مستويات" data-it="lv3">٤</button><button data-n="all" title="افتح كل الفروع" data-it="lvAllT">الكل</button></div>
   <button id="sy" class="ib" hidden></button>
+  <div id="crumb" hidden></div>
   <button id="ft" class="ib" hidden title="افتح الكراسة في تاب كامل" data-it="openTab">⤢</button>
   <div id="menu" role="menu" hidden>
     <button id="lb" class="nbo"><i>🏠</i><span data-i="mHome">الرئيسية</span></button>

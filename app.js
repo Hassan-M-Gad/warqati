@@ -75,7 +75,7 @@ function render(f,pos){
   var B=newSheet(p);
   L.forEach(function(x,i){
     if(H[i])return;
-    var d=document.createElement('div');d.className='line'+(x.n?' txt':(x.l?'':' l0'))+(i===0?' title':'');
+    var d=document.createElement('div');d.dataset.li=i;d.className='line'+(x.n?' txt':(x.l?'':' l0'))+(i===0?' title':'');
     d.style.setProperty('--lc',x.n?'var(--ink)':'var(--c'+(x.l?(x.l-1)%5+1:0)+')');
     d.style.paddingInlineStart=(IN0+x.l*S)+'px';
     var kids=hasKids(i),m=document.createElement('span');m.className='mk'+(kids?' k':'');
@@ -99,9 +99,13 @@ function render(f,pos){
     d.append(m,inp);
     if(kids&&x.c){var bg=document.createElement('span');bg.className='cnt';var cn=countKids(i);bg.textContent=cn?'+'+cn:'…';bg.onclick=function(){toggleCollapse(i)};d.append(bg)}
     B.append(d);grow(inp);
-    if(B.children.length>1&&B.scrollHeight>CAP){B.removeChild(d);B=newSheet(p);B.append(d);grow(inp)}
+    if(B.children.length>1&&B.scrollHeight>CAP){B.removeChild(d);var nb=newSheet(p),mv=[],top=x.l;
+      // العناوين اللي في آخر الصفحة وكل واحد فيهم أبو اللي بعده بينزلوا مع فروعهم (لحد ٣ سطور)
+      while(mv.length<3&&B.children.length>1){var pv=B.lastElementChild,pl=L[+pv.dataset.li].l;if(pl>=top)break;B.removeChild(pv);mv.unshift(pv);top=pl}
+      mv.forEach(function(m){nb.append(m)});B=nb;B.append(d);grow(inp)}
     inp.dataset.h=inp.offsetHeight});
-  var sh=FLOW?[]:p.querySelectorAll('.sheet');sh.forEach(function(sx,k){var pn=document.createElement('div');pn.className='pn';pn.textContent=t('page',k+1,sh.length);sx.append(pn)});fitStage();
+  var sh=FLOW?[]:p.querySelectorAll('.sheet');sh.forEach(function(sx,k){var pn=document.createElement('div');pn.className='pn';pn.textContent=t('page',k+1,sh.length);sx.append(pn);
+    var fl=sx.querySelector('.line');if(k>0&&fl){var cr=crumbs(+fl.dataset.li,'cont');if(cr)sx.append(cr)}});fitStage();
   document.querySelectorAll('#lv button').forEach(function(b){b.classList.toggle('on',b.dataset.n===String(lvSel))});
   if(f!=null){var el=p.querySelector('textarea[data-i="'+f+'"]');if(el){el.focus();var n=pos!=null?Math.min(pos,el.value.length):el.value.length;el.setSelectionRange(n,n)}}
   updDock()}
@@ -163,7 +167,18 @@ function key(e,i,inp){
   else if(e.key==='ArrowDown'&&i<L.length-1&&(inp.scrollHeight<=44||a===v.length)){e.preventDefault();var H2=hid(),j2=i+1;while(j2<L.length&&H2[j2])j2++;if(j2<L.length)render(j2)}}
 
 // شريط أدوات السطر تحت
-function updDock(){var x=L[cur],k=document.getElementById('kd');if(!x||!k)return;k.textContent=x.n?'•':'¶';k.title=x.n?t('toNode'):t('toText');k.disabled=cur===0}
+// المسار: الأفكار اللي السطر طالع منها (من غير عنوان الكراسة)، وكل جزء فيه بيوديك للسطر بتاعه
+function parentOf(i){for(var j=i-1;j>=0;j--)if(L[j].l<L[i].l)return j;return -1}
+function pathOf(i){var r=[];if(!L[i])return r;for(var j=parentOf(i);j>0;j=parentOf(j))r.unshift(j);return r}
+function crumbs(i,cls){var a=pathOf(i);if(!a.length)return null;var e=document.createElement('div');e.className='crumb '+cls;
+  if(cls==='cont'){var lb=document.createElement('span');lb.className='lbl';lb.textContent=t('continued');e.append(lb)}
+  if(a.length>4){var m=document.createElement('span');m.className='more';m.textContent='…';e.append(m);a=a.slice(-4)}
+  a.forEach(function(j){var b=document.createElement('button'),s=L[j].t.trim();b.textContent=s.length>30?s.slice(0,29)+'…':(s||'…');b.title=s;
+    b.onmousedown=function(ev){ev.preventDefault()};b.onclick=function(){render(j)};e.append(b)});
+  return e}
+function updCrumb(){var c=document.getElementById('crumb');if(!c)return;c.innerHTML='';var cr=!isLib()&&NB?crumbs(cur,'bar'):null;
+  if(cr)c.append(cr);c.hidden=!cr}
+function updDock(){updCrumb();var x=L[cur],k=document.getElementById('kd');if(!x||!k)return;k.textContent=x.n?'•':'¶';k.title=x.n?t('toNode'):t('toText');k.disabled=cur===0}
 [['in',function(){indent(cur,1)}],['ou',function(){indent(cur,-1)}],['kd',function(){toggleKind(cur)}],['mu',function(){move(cur,-1)}],['md',function(){move(cur,1)}]].forEach(function(z){
   var b=document.getElementById(z[0]);b.onpointerdown=function(e){e.preventDefault()};b.onclick=z[1]});
 
